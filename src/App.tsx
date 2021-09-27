@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 interface Todo {
   value: string;
   id: number;
+  checked: boolean;
+  removed: boolean;
 }
 
 const App: React.VFC = () => {
-  
+
   const [text, setText] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
 
@@ -20,6 +22,8 @@ const App: React.VFC = () => {
     const newTodo: Todo = {
       value: text,
       id: new Date().getTime(),
+      checked: false,
+      removed: false,
     };
 
     setTodos([newTodo, ...todos]);
@@ -27,7 +31,36 @@ const App: React.VFC = () => {
   };
 
   const handleOnEdit = (id: number, value: string) => {
-    const newTodos = todos.map
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.value = value;
+      }
+      return todo;
+    });
+
+    setTodos(newTodos);
+  };
+
+  const handleOnChecked = (id: number, checked: boolean) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.checked = !checked;
+      }
+      return todo;
+    });
+    
+    setTodos(newTodos);
+  };
+
+  const handleOnRemoved = (id: number, removed: boolean) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.removed = !removed;
+      }
+      return todo;
+    });
+
+    setTodos(newTodos);
   };
 
   return (
@@ -45,10 +78,20 @@ const App: React.VFC = () => {
           return (
             <li key={todo.id}>
               <input
-                type="text"
-                value={todo.value}
-                onChange={(e) => e.preventDefault()}
+                type="checkbox"
+                disabled={todo.removed}
+                checked={todo.checked}
+                onChange={(e) => handleOnChecked(todo.id, todo.checked)}
               />
+              <input
+                type="text"
+                disabled={todo.removed || todo.checked}
+                value={todo.value}
+                onChange={(e) => handleOnEdit(todo.id, e.target.value)}
+              />
+              <button onClick={() => handleOnRemoved(todo.id, todo.removed)}>
+                {todo.removed ? 'Restore' : 'Delete'}
+              </button>
             </li>
           );
         })}
